@@ -25,4 +25,5 @@ output <- iNEXTmeta(bat$data, diversity="TD", order.q=0,
                     datatype="incidence_raw", base="coverage", level=0.9,
                     treatment_order=c("Enhanced","Control"))
 ggiNEXTmeta(output, c(-11,16), 3)
+
 }
