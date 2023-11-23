@@ -1,0 +1,71 @@
+---
+title: "An Introduction to iNEXT.meta via Examples"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{YourVignetteName}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(iNEXT.meta)
+```
+
+<font color=#FF6600>
+</font>
+
+`iNEXT.meta` (iNterpolation and EXTrapolation for three dimensions of biodiversity with meta analysis) is an R package for computing the difference of standardized taxonomic, phylogenetic or functional diversity (3D) with two treatments and perform meta analysis. The measures are illustrated by using bat data. The data is about the species-by-sampling units incidence data for 16 different species of bat in 8 sites (B04, B05, B06, B07, P08, U01, U02, U03) with 2 different treatments (Control and Enhanced).  
+
+For each of the three dimensions, iNEXT.meta focuses on the difference of the diversity in each study/site, and fit the fixed effect model to performs the meta analysis. And this package also provides graphics for visualizing the result of meta analysis. 
+
+
+## HOW TO RUN iNEXT.meta:
+The `iNEXT.meta` package can be downloaded from Anne Chao's [iNEXT.meta_github](https://github.com/AnneChao/iNEXT.meta) using the following commands. 
+
+```{r eval=FALSE}
+## install the latest version from github
+install.packages('devtools')
+library(devtools)
+install_github('AnneChao/iNEXT.meta')
+
+## import packages
+library(iNEXT.meta)
+```
+
+
+There are two main functions in this package:
+
+iNEXTmeta: Computes the difference of diversity (standardized taxonomic, phylogenetic and functional diversity with common sample size or sample coverage) with two treatments, and fit the fixed effect model to perform meta analysis. 
+
+ggiNEXTmeta: Visualizes the output from the function iNEXTmeta by providing the forest plot of the result in each study/site and meta analysis. 
+
+
+## MAIN FUNCTION: iNEXTmeta()
+
+We first describe the main function `iNEXTmeta()` with default arguments: 
+
+```{r eval=FALSE}
+iNEXTmeta(data, diversity="TD", order.q=0, datatype="incidence_raw", 
+          base="coverage", level=NULL, nboot=10, treatment_order, conf=0.95, 
+          PDtree, PDreftime = NULL, PDtype = "meanPD", FDdistM, FDtype = "AUC", FDtau = NULL)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
