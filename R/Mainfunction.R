@@ -43,6 +43,7 @@
 #' iNEXTmeta(bat$data, diversity="TD", order.q=0,
 #'           datatype="incidence_raw", base="coverage", level=0.9,
 #'           treatment_order=c("Enhanced","Control"))
+#' @export
 
 
 iNEXTmeta <- function(data, diversity="TD", order.q=0, datatype="incidence_raw", base="coverage", level=NULL, nboot=10, treatment_order, conf=0.95, PDtree, PDreftime = NULL, PDtype = "meanPD", FDdistM, FDtype = "AUC", FDtau = NULL){
@@ -161,6 +162,8 @@ iNEXTmeta <- function(data, diversity="TD", order.q=0, datatype="incidence_raw",
 #'                     datatype="incidence_raw", base="coverage", level=0.9,
 #'                     treatment_order=c("Enhanced","Control"))
 #' ggiNEXTmeta(output, c(-11,16), 3)
+#'
+#' @export
 
 
 ggiNEXTmeta <- function(data,range,num_round){
