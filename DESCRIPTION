@@ -1,6 +1,6 @@
 Package: iNEXT.meta
 Type: Package
-Title: Perform meta analysis for the difference of diversity with two treatments
+Title: Meta analysis for the difference of iNterpolation and EXTrapolation with diversity for three dimensions with two treatments
 Version: 0.1.0
 Description: Provide function to compute the difference of standardized taxonomic, phylogenetic or functional diversity (3D) with two treatments and perform meta analysis. And this package also provide forest plot for visualizing the result. 
 License: What license is it under?

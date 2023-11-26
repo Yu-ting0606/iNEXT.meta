@@ -9,27 +9,37 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", 
+                      fig.retina = 2,
+                      fig.align = 'center',
+                      fig.width = 8, fig.height = 3,
+                      warning = FALSE, message = FALSE)
+options("width"=200)
 library(iNEXT.meta)
 ```
 
 <font color=#FF6600>
 </font>
 
-`iNEXT.meta` (iNterpolation and EXTrapolation for three dimensions of biodiversity with meta analysis) is an R package for computing the difference of standardized taxonomic, phylogenetic or functional diversity (3D) with two treatments and perform meta analysis. The measures are illustrated by using bat data. The data is about the species-by-sampling units incidence data for 16 different species of bat in 8 sites (B04, B05, B06, B07, P08, U01, U02, U03) with 2 different treatments (Control and Enhanced).  
+`iNEXT.meta` (Meta analysis for the difference of iNterpolation and EXTrapolation with diversity for three dimensions with two treatments) is an R package that extends the concepts of \code{iNEXT.3D} (Chao et al., 2021) to meta analysis (fixed effect model). The measures are illustrated by using bat data. The data is about the species-by-sampling units incidence data for 16 species of bat in 8 sites (B04, B05, B06, B07, P08, U01, U02, U03) with 2 different treatments (Control and Enhanced).  
 
-For each of the three dimensions, iNEXT.meta focuses on the difference of the diversity in each study/site, and fit the fixed effect model to performs the meta analysis. And this package also provides graphics for visualizing the result of meta analysis. 
+For each of the three dimensions, iNEXT.meta focuses on the difference of standardized 3D diversity (taxonomic diversity, phylogenetic diversity, functional diversity) in each study/site, and fit the fixed effect model to performs the meta analysis. And this package also provides graphics for visualizing the result of meta analysis. 
+
+
+## SOFTWARE NEEDED TO RUN iNEXT.meta IN R
+- Required: [R](https://cran.r-project.org/)
+- Suggested: [RStudio IDE](https://www.rstudio.com/products/RStudio/#Desktop)
 
 
 ## HOW TO RUN iNEXT.meta:
-The `iNEXT.meta` package can be downloaded from Anne Chao's [iNEXT.meta_github](https://github.com/AnneChao/iNEXT.meta) using the following commands. 
+The `iNEXT.meta` package can be downloaded from Anne Chao's Github [iNEXT.meta_github](https://github.com/AnneChao/iNEXT.meta) using the following commands. For a first-time installation, an additional visualization extension package (`forestplot` frm CRAN) and (`iNEXT.3D` from Anne Chao's github) must be installed and loaded. 
 
 ```{r eval=FALSE}
+# install_github('AnneChao/iNEXT.3D')
+# library(iNEXT.3D)
+
 ## install the latest version from github
-install.packages('devtools')
+#install.packages('devtools')
 library(devtools)
 install_github('AnneChao/iNEXT.meta')
 
@@ -38,11 +48,12 @@ library(iNEXT.meta)
 ```
 
 
-There are two main functions in this package:
+There are two main functions in this package: 
 
-iNEXTmeta: Computes the difference of diversity (standardized taxonomic, phylogenetic and functional diversity with common sample size or sample coverage) with two treatments, and fit the fixed effect model to perform meta analysis. 
+- **iNEXTmeta**: Estimates the difference of standardized 3D diversity (taxonomic, phylogenetic and functional diversity with common sample size or sample coverage), and fit the fixed effect model to perform meta analysis.
 
-ggiNEXTmeta: Visualizes the output from the function iNEXTmeta by providing the forest plot of the result in each study/site and meta analysis. 
+- **ggiNEXTmeta**: Visualizes the output from the function iNEXTmeta by providing the forest plot of the difference of standardized 3D diversity with two treatments in each study/site and meta analysis. 
+
 
 
 ## MAIN FUNCTION: iNEXTmeta()
@@ -50,22 +61,289 @@ ggiNEXTmeta: Visualizes the output from the function iNEXTmeta by providing the 
 We first describe the main function `iNEXTmeta()` with default arguments: 
 
 ```{r eval=FALSE}
-iNEXTmeta(data, diversity="TD", order.q=0, datatype="incidence_raw", 
-          base="coverage", level=NULL, nboot=10, treatment_order, conf=0.95, 
-          PDtree, PDreftime = NULL, PDtype = "meanPD", FDdistM, FDtype = "AUC", FDtau = NULL)
+iNEXTmeta(data, diversity = "TD", order.q = 0, datatype = "incidence_raw",
+          base = "coverage", level = NULL, nboot = 10, treatment_order, conf = 0.95, 
+          PDtree, PDreftime = NULL, PDtype = "meanPD", FDdistM, FDtype = "AUC", FDtau = NULL, FDcut_number = 30)
+```
+
+The arguments of this function are briefly described below, and will be explained in more details by illustrative examples in later text. 
+
+<table style="width:100%;">
+<colgroup>
+<col width="20%">
+<col width="80%">
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Argument</th>
+<th align="left">Description</th>
+
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><code>data</code></td>
+<td align="left">
+(a) For <code>datatype = "abundance"</code>, data can be input as a data.frame (species by assemblages). Here an assemblage refers to a combination of study/site and treatment. The names of assemblages must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage. For example, like "Site_B04_Control" the name of a assemblage, "Site" is the word use in this data, "B04" is the site of this assemblage and "Control" is the treatment of this assemblage. \cr
+(b) For <code>datatype = "incidence_raw"</code>, data can be input as a list with several data.frames (assemblages), each data.frames represents species-by-sampling units incidence data. The names of lists (assemblages) must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage, as described in datatype "abundance". </td>
+
+</tr>
+<tr class="even">
+<td align="center"><code>diversity</code></td>
+<td align="left">Selection of diversity type: <code>diversity = "TD"</code> = <font color=#FF6781>Taxonomic diversity</font>, <code>diversity = "PD"</code> = <font color=#FF6781>Phylogenetic diversity</font>, and <code>diversity = "FD"</code> = <font color=#FF6781>Functional diversity</font>.</td>
+
+</tr>
+<tr class="odd">
+<td align="center"><code>order.q</code></td>
+<td align="left">A numerical value specifying the diversity order, Default is <code>q = 0</code>.</td>
+
+</tr>
+<tr class="even">
+<td align="center"><code>datatype</code></td>
+<td align="left">Data type of input data: individual-based abundance data (<code>datatype = "abundance"</code>) or species by sampling-units incidence matrix (<code>datatype = "incidence_raw"</code>) with all entries being 0 (non-detection) or 1 (detection).</td>
+
+</tr>
+<tr class="odd">
+<td align="center"><code>base</code></td>
+<td align="left">Selection of standardization base: sample-size-based (<code>base = "size"</code>) or coverage-based (<code>base = "coverage"</code>) rarefaction and extrapolation for estimating standardized 3D diversity. Default is <code>base = "coverage"</code>.</td>
+
+</tr>
+<tr class="even">
+<td align="center"><code>level</code></td>
+<td align="left">A numerical value specifying the particular values of sample coverage (between 0 and 1) or sample sizes that will be used to compute standardized 3D estimates. If <code>base = "coverage"</code> and <code>level = NULL</code>, then this function computes the standardized 3D diversity estimates for the minimum sample coverage among all samples extrapolated to double reference sizes. If <code>base = "size"</code> and <code>level = NULL</code>, then this function computes the standardized 3D diversity estimates for the minimum sample size among all samples extrapolated to double reference sizes.</td>
+
+</tr>
+<tr class="odd">
+<td align="center"><code>nboot</code></td>
+<td align="left">A positive integer specifying the number of bootstrap replications when assessing sampling uncertainty for estimating standardized 3D diversity and the associated confidence intervals. Default is 10. If more accurate results are required, set `nboot = 100 (or `nboot = 200`).</td>
+
+</tr>
+<tr class="even">
+<td align="center"><code>treatment_order</code></td>
+<td align="left">A character vector for the names of treatment. The difference of standardized 3D diversity will be computed as diversity of the first treatment minus the diversity of second treatment.</td>
+
+</tr>
+<tr class="odd">
+<td align="center"><code>conf</code></td>
+<td align="left">A positive number < 1 specifying the level of confidence interval. Default is <code>conf = 0.95</code>.</td>
+
+</tr>
+<tr class="even">
+<td align="center"><code>PDtree</code></td>
+<td align="left">(required only when <code>diversity = "PD"</code>), a phylogenetic tree in Newick format for all observed species in the pooled data.</td>
+
+</tr>
+<tr class="odd">
+<td align="center"><code>PDreftime</code></td>
+<td align="left">(required only when <code>diversity = "PD"</code>), a numerical value specifying reference times for PD. Default is <code>NULL</code> (i.e., the age of the root of PDtree).</td>
+
+</tr>
+<tr class="even">
+<td align="center"><code>PDtype</code></td>
+<td align="left">(required only when <code>diversity = "PD"</code>), select PD type: <code>PDtype = "PD"</code> (effective total branch length) or <code>PDtype = "meanPD"</code> (effective number of equally divergent lineages). Default is <code>"meanPD"</code>, where <code>meanPD</code> = PD/tree depth.</td>
+
+</tr>
+<tr class="odd">
+<td align="center"><code>FDdistM</code></td>
+<td align="left">(required only when <code>diversity = "FD"</code>), a species pairwise distance matrix for all species in the pooled data.</td>
+
+</tr>
+<tr class="even">
+<td align="center"><code>FDtype</code></td>
+<td align="left">(required only when <code>diversity = "FD"</code>), select FD type: <code>FDtype = "tau_value"</code> for FD under a specified threshold value, or <code>FDtype = "AUC"</code> (area under the curve of tau-profile) for an overall FD which integrates all threshold values between zero and one. Default is <code>"AUC"</code>.</td>
+
+</tr>
+<tr class="odd">
+<td align="center"><code>FDtau</code></td>
+<td align="left">(required only when <code>diversity = "FD"</code> and <code>FDtype = "tau_value"</code>), a numerical value between 0 and 1 specifying the tau value (threshold level) that will be used to compute FD. If <code>FDtau = NULL</code> (default), then threshold is set to be the mean distance between any two individuals randomly selected from the pooled data (i.e., quadratic entropy).</td>
+
+</tr>
+<tr class="even">
+<td align="center"><code>FDcut_number</code></td>
+<td align="left">(required only when <code>diversity = "FD"</code> and <code>FDtype = "AUC"</code>), a numeric number to cut [0, 1] interval into equal-spaced sub-intervals to obtain the AUC value by integrating the tau-profile. Equivalently, the number of tau values that will be considered to compute the integrated AUC value. Default is <code>30</code>. A larger value can be set to obtain more accurate AUC value. </td>
+
+</tbody>
+</table>
+
+This function returns an `"iNEXTmeta"` object which can be further used to make plots using the function `ggiNEXTmeta()` to be described below. 
+
+
+## DATA INPUT FORMAT
+
+To assess meta analysis among studies/sites, information on the names of studies/sites and two treatments, and abundance/incidence for species are required. In any input dataset, set row name of the data to be species name (or identification code). And column name of abundance data and list name of incidence data should be assemblage name, that is a combination of study/site and treatment. The names of assemblages must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage. For example, like "Site_B04_Control" the name of a assemblage, "Site" is the word use in this data, "B04" is the site of this assemblage and "Control" is the treatment of this assemblage.  
+
+Two types of species abundance/incidence data are supported:
+
+1. Individual-based abundance data (`datatype = "abundance"`):
+Input data for a single dataset with N assemblages consist of a species-by-assemblage abundance <code>data.frame</code>. 
+
+2. Sampling-unit-based incidence raw data (`datatype = "incidence_raw"`):
+Input data for a list with N data.frames (assemblages), with each data.frames representing a species-by-sampling-unit incidence raw matrix for one of the N assemblages; each element in the incidence raw matrix is 1 for a detection, and 0 for a non-detection. 
+
+
+We use the bat species incidence data collected from eight sites with two different treatments. The data (named "bat_incidence_data") consist of a list of 16 data.frames (the combinations of 8 sites and 2 treatments, which are "Site_B04_Enhanced", "Site_B05_Enhanced", "Site_B06_Enhanced", "Site_B07_Enhanced", "Site_P08_Enhanced", "Site_U01_Enhanced", "Site_U02_Enhanced", "Site_U03_Enhanced", "Site_B04_Control". "Site_B05_Control", "Site_B06_Control", "Site_B07_Control", "Site_P08_Control", "Site_U01_Control", "Site_U02_Control" and "Site_U03_Control"); each data.frames represents a species-by-sampling-unit incidence raw matrix. Run the following code to view the data: (Here we only show the first dataframes with the first 15 rows and 5 columns.) 
+
+
+```{r, eval=FALSE}
+data("bat_incidence_data")
+bat_incidence_data
+```
+
+```{r, echo=FALSE}
+data("bat_incidence_data")
+bat_incidence_data$Site_B04_Enhanced[1:15,1:5]
+```
+
+#### Phylogenetic tree format for PD  
+
+To perform PD analysis, the phylogenetic tree (in Newick format) spanned by species observed in all datasets must be stored in a txt file. For example, the phylogenetic tree for all observed species is stored in a data file named "bat_tree" for demonstration purpose. A partial list of the tip labels are shown below. 
+
+```{r}
+data("bat_tree")
+bat_tree
+```
+
+#### Species pairwise distance matrix format for FD
+To perform FD analysis, the species-pairwise distance matrix (Gower distance computed from species traits) for species observed in all datasets must be stored in a matrix/data.frame format. Typically, the distance between any two species is computed from species traits using the Gower distance. In our demo data, the distance matrix for all species is stored in a csv file named "bat_distM" for demonstration purpose. Here we only show the first three rows and three columns of the distance matrix.
+
+```{r, eval=FALSE}
+data("bat_distM")
+bat_distM
+```
+
+```{r, echo=FALSE}
+data("bat_distM")
+round(bat_distM[1:3,1:3], 3)
+```
+
+
+## Output of the main function iNEXTmeta() 
+
+The `iNEXTmeta()` function returns the `"iNEXTmeta"` object which is a data frames. It's columns are ’Study/Site (or the word that setting in the names of columns/lists in data)’, ’Order.q’, ’Diversity’, ’Difference’ (difference of diversity for two treatments), ’SE’ (standard deviation of difference), ’LCL’ and ’UCL’. Also, have two columns with the names of treatments, which are about diversity of two treatments in each study/site. And a column ’weight_fixed’ at the last of dataframe. 
+
+
+## Taxonomic diversity
+
+First, we run the `iNEXTmeta()` function with `bat_incidence_data` to compute the difference of taxonomic diversity with two treatments under `base = 'coverage'`(default setting) for all sites and perform meta analysis by running the following code: 
+
+```{r, echo=FALSE}
+# Taxonomic diversity
+
+data("bat_incidence_data")
+output1c  <-  iNEXTmeta(data = bat_incidence_data, diversity = 'TD', order.q=0, datatype="incidence_raw", 
+                        base = 'coverage', nboot = 100, treatment_order=c("Enhanced","Control"), conf=0.95)
+cbind(output1c[,1:3], round(output1c[,4:10],2))
+```
+
+The output (a data.frame) is as above, that the numerical values are round to 2nd decimal place. It includes the name of Site (`Dataset`), the diversity order of q (`Order.q`), the difference of diversity with two treatments (`Difference`), standard error of the difference of diversity (`SE`), the bootstrap lower and upper confidence limits for the difference of diversity with a default significance level of 0.95 (`LCL`, `UCL`), diversity of two treatments (`Enhanced`, `Control`) and the weight for each site (`weight_fixed`).  
+
+
+## Phylogenetic diversity
+
+As with taxonomic diversity, `iNEXT.meta` computes the difference of phylogenetic diversity with two treatments under `base = 'coverage'` or `base = 'size'` for all sites and perform meta analysis.  
+
+The required argument for performing PD analysis is `PDtree`. For example, the phylogenetic tree for all observed species  is stored in a txt file named "bat_tree". Then we enter the argument `PDtree = bat_tree`. Two optional arguments are: `PDtype` and `PDreftime`. There are two options for `PDtype`: `"PD"` (effective total branch length) or `"meanPD"` (effective number of equally divergent lineages, meanPD = PD/tree depth). Default is `PDtype = "meanPD"`. `PDreftime` is a numerical value specifying a reference time for computing phylogenetic diversity. By default (`PDreftime = NULL`), the reference time is set to the tree depth, i.e., age of the root of the phylogenetic tree. 
+
+Run the following code to perform PD analysis under `base = 'coverage'` this default setting. The output data frame is similar to the taxonomic diversity and thus is omitted; see later graphical display of the output. 
+
+```{r, eval=FALSE}
+## Phylogenetic diversity
+
+data("bat_incidence_data")
+data("bat_tree")
+output2c <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q=0, datatype = "incidence_raw", 
+                      base = 'coverage', nboot = 10, treatment_order=c("Enhanced","Control"), conf=0.95, 
+                      PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
+output2c
+```
+
+
+## Functional diversity 
+
+As with taxonomic and phylogenetic diversity, `iNEXT.meta` computes the difference of functional diversity with two treatments under `base = 'coverage'` or `base = 'size'` for all sites and perform meta analysis. 
+
+The required argument for performing FD analysis is `FDdistM`. For example, the distance matrix for all species is stored in a csv file named "bat_distM". Then we enter the argument `FDdistM = bat_distM`. Three optional arguments are (1) `FDtype`: `FDtype = "AUC"`means FD is computed from the area under the curve of a tau-profile by integrating all plausible threshold values between zero and one;  `FDtype = "tau-value"` means FD is computed under a specific threshold value to be specified in the argument `FD_tau`. (2) `FD_tau`: a numerical value specifying the tau value (threshold level) that will be used to compute FD. If `FDtype = "tau-value"` and `FD_tau = NULL`, then the threshold level is set to be the mean distance between any two individuals randomly selected from the pooled data over all datasets (i.e., quadratic entropy). (3)  `FDcut_number` is a numeric number to cut [0, 1] interval into equal-spaced sub-intervals to obtain the AUC value. Default is `FDcut_number = 30`. If more accurate integration is desired, then use a larger integer. 
+
+Run the following code to perform FD analysis. The output data frame is similar to the taxonomic diversity and thus is omitted; see later graphical display of the output. 
+
+```{r, eval=FALSE}
+## Functional diversity
+
+data("bat_incidence_data")
+data("bat_tree")
+output3c <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0, datatype = "incidence_raw",
+                      base = 'coverage', nboot = 10, treatment_order=c("Enhanced","Control"), conf=0.95,
+                      FDdistM = bat_distM, FDtype = 'AUC', FDcut_number = 30)
+output3c
 ```
 
 
 
+## GRAPHIC DISPLAYS: FUNCTION ggiNEXmeta()
+
+The function `ggiNEXTmeta()` with default arguments is described as follows: 
+
+```{r eval=FALSE}
+ggiNEXTmeta(output, num_round=3)  
+```
+
+<table style="width:100%;">
+<colgroup>
+<col width="20%">
+<col width="80%">
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Argument</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><code>output</code></td>
+<td align="left">The output of the <code>iNEXTmeta<code> function.</td>
+
+</tr>
+<tr class="even">
+<td align="center"><code>num_round</code></td>
+<td align="left">A numerical value that the values show on the plot are rounded to the specified value of decimal places. Default is 3.</td>
+
+</tbody>
+</table>
+
+The `ggiNEXTmeta()` function is a wrapper around the `forestplot` package. `ggiNEXTmeta()` provides forest plot for visualizing the output of `iNEXTmeta()`. Run the following code to display the plot for the output of `iNEXTmeta()` with taxonomic, phylogenetic and functional diversity, respectively:
+
+```{r}
+# Taxonomic diversity
+
+data("bat_incidence_data")
+output1c  <-  iNEXTmeta(data = bat_incidence_data, diversity = 'TD', order.q=0, datatype="incidence_raw", 
+                        base = 'coverage', nboot = 100, treatment_order=c("Enhanced","Control"), conf=0.95)
+ggiNEXTmeta(output1c, num_round = 3)
+```
 
 
+```{r}
+## Phylogenetic diversity
 
+data("bat_incidence_data")
+data("bat_tree")
+output2c <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q=0, datatype = "incidence_raw", 
+                      base = 'coverage', nboot = 30, treatment_order=c("Enhanced","Control"), conf=0.95, 
+                      PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
+ggiNEXTmeta(output2c, num_round = 3)
+```
 
+```{r}
+## Functional diversity
 
-
-
-
-
+data("bat_incidence_data")
+data("bat_tree")
+output3c <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0, datatype = "incidence_raw",
+                      base = 'coverage', nboot = 10, treatment_order=c("Enhanced","Control"), conf=0.95,
+                      FDdistM = bat_distM, FDtype = 'AUC', FDcut_number = 30)
+ggiNEXTmeta(output3c, num_round = 3)
+```
 
 
 

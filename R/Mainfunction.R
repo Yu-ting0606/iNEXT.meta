@@ -1,25 +1,27 @@
 #' estimates the difference of diversity with two treatments and perform meta analysis
 #'
-#' \code{iNEXTmeta} is a function that estimates the difference of standardized 3D (taxonomic, phylogenetic and functional) diversity with two treatments (e.g., enhanced vs. control), and perform meta analysis for several studies/sites.
+#' \code{iNEXTmeta} is a function that estimates the difference of standardized 3D (taxonomic, phylogenetic and functional) diversity with two treatments (e.g., enhanced vs. control), and perform meta analysis (fixed effect model) for several studies/sites.
 #'
 #' @param data (a) For datatype = "abundance", data can be input as a data.frame (species by assemblages). Here an assemblage refers to a combination of study/site and treatment. The names of assemblages must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage. For example, like "Site_B04_Control" the name of a assemblage, "Site" is the word use in this data, "B04" is the site of this assemblage and "Control" is the treatment of this assemblage.\cr
-#' (b) For datatype = "incidence_raw", data can be input as a list with several lists (assemblages) of data.frames, each matrix represents species-by-sampling units incidence data. The names of lists (assemblages) must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage, as described in datatype "abundance".
+#' (b) For datatype = "incidence_raw", data can be input as a list with several data.frames (assemblages), each data.frames represents species-by-sampling units incidence data. The names of lists (assemblages) must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage, as described in datatype "abundance".
 #' @param diversity selection of diversity type: 'TD' = Taxonomic diversity, 'PD' = Phylogenetic diversity, and 'FD' = Functional diversity.
-#' @param order.q a number specifying the diversity order, Default is \code{q = 0}.
-#' @param datatype data type of input data: individual-based abundance data (datatype = "abundance"), species by sampling-units incidence matrix (datatype = "incidence_raw") with all entries being 0 (non-detection) or 1 (detection).
+#' @param order.q a numerical value specifying the diversity order, Default is \code{q = 0}.
+#' @param datatype data type of input data: individual-based abundance data (datatype = "abundance") or species by sampling-units incidence matrix (datatype = "incidence_raw") with all entries being 0 (non-detection) or 1 (detection).
 #' @param base selection of standardization base: sample-size-based (base = "size") or coverage-based (base = "coverage") rarefaction and extrapolation for estimating standardized 3D diversity. Default is \code{base = "coverage"}.
-#' @param level a number specifying the particular value of sample coverage (between 0 and 1) or sample sizes that will be used to compute standardized 3D estimates. \cr
+#' @param level a numerical value specifying the particular value of sample coverage (between 0 and 1) or sample sizes that will be used to compute standardized 3D estimates. \cr
 #' If base = "coverage" and level = NULL, then this function computes the standardized 3D diversity estimates for the minimum sample coverage among all samples extrapolated to double reference sizes. \cr
 #' If base = "size" and level = NULL, then this function computes the standardized 3D diversity estimates for the minimum sample size among all samples extrapolated to double reference sizes.
-#' @param nboot a positive integer specifying the number of bootstrap replications when assessing sampling uncertainty for estimating standardized 3D diversity and the associated confidence intervals. Default is 10.
+#' @param nboot a positive integer specifying the number of bootstrap replications when assessing sampling uncertainty for estimating standardized 3D diversity and the associated confidence intervals. Default is 10. If more accurate results are required, set \code{nboot = 100} (or \code{nboot = 200}).
 #' @param treatment_order a character vector for the names of treatment. The difference of standardized 3D diversity will be computed as diversity of the first treatment minus the diversity of second treatment.
 #' @param conf a positive number < 1 specifying the level of confidence interval. Default is 0.95.
 #' @param PDtree (required only when diversity = "PD"), a phylogenetic tree in Newick format for all observed species in the pooled data.
-#' @param PDreftime (required only when diversity = "PD"), a number specifying reference times for PD. Default is NULL (i.e., the age of the root of PDtree).
+#' @param PDreftime (required only when diversity = "PD"), a numerical value specifying reference times for PD. Default is NULL (i.e., the age of the root of PDtree).
 #' @param PDtype (required only when diversity = "PD"), select PD type: PDtype = "PD" (effective total branch length) or PDtype = "meanPD" (effective number of equally divergent lineages). Default is "meanPD", where meanPD = PD/tree depth.
 #' @param FDdistM (required only when diversity = "FD"), a species pairwise distance matrix for all species in the pooled data.
-#' @param FDtype (required only when diversity = "FD"), select FD type: FDtype = "tau_values" for FD under specified threshold values, or FDtype = "AUC" (area under the curve of tau-profile) for an overall FD which integrates all threshold values between zero and one. Default is "AUC".
-#' @param FDtau (required only when diversity = "FD" and FDtype = "tau_values"), a number between 0 and 1 specifying tau values (threshold levels). If NULL (default), then threshold is set to be the mean distance between any two individuals randomly selected from the pooled data (i.e., quadratic entropy).
+#' @param FDtype (required only when diversity = "FD"), select FD type: FDtype = "tau_values" for FD under a specified threshold value, or FDtype = "AUC" (area under the curve of tau-profile) for an overall FD which integrates all threshold values between zero and one. Default is "AUC".
+#' @param FDtau (required only when diversity = "FD" and FDtype = "tau_values"), a numerical value between 0 and 1 specifying the tau value (threshold level) that will be used to compute FD. If \code{FDtau = "NULL"} (default), then threshold is set to be the mean distance between any two individuals randomly selected from the pooled data (i.e., quadratic entropy).
+#' @param FDcut_number (required only when diversity = "FD" and FDtype = "AUC") a numeric number to cut [0, 1] interval into equal-spaced sub-intervals to obtain the AUC value by integrating the tau-profile. Equivalently, the number of tau values that will be considered to compute the integrated AUC value. Default is 30. A larger value can be set to obtain more accurate AUC value.
+#'
 #'
 #'
 #' @import devtools
@@ -39,14 +41,71 @@
 #' diversity of two treatments in each study/site. And a column ’weight_fixed’ at the last of dataframe.
 #'
 #' @examples
-#' data("bat")
-#' iNEXTmeta(bat$data, diversity="TD", order.q=0,
-#'           datatype="incidence_raw", base="coverage", level=0.9,
-#'           treatment_order=c("Enhanced","Control"))
+#'
+#' ## Taxonomic diversity for incidence data
+#'
+#' # Coverage-based standardized TD
+#' data("bat_incidence_data")
+#' output1c <- iNEXTmeta(data = bat_incidence_data, diversity = "TD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "coverage", level = 0.9, nboot = 100,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95)
+#' output1c
+#'
+#' # Sized-based standardized TD
+#' data("bat_incidence_data")
+#' output1s <- iNEXTmeta(data = bat_incidence_data, diversity = "TD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "size", level = 0.9, nboot = 100,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95)
+#' output1s
+#'
+#'
+#'
+#' ## Phylogenetic diversity for incidence data
+#'
+#' # Coverage-based standardized PD
+#' data("bat_incidence_data")
+#' data("bat_tree")
+#' output2c <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "coverage", level = 0.9, nboot = 10,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95,
+#'                       PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
+#' output2c
+#'
+#' # Sized-based standardized PD
+#' data("bat_incidence_data")
+#' data("bat_tree")
+#' output2s <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "size", level = 0.9, nboot = 10,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95,
+#'                       PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
+#' output2s
+#'
+#'
+#'
+#' ## Functional diversity for incidence data
+#'
+#' # Coverage-based standardized FD
+#' data("bat_incidence_data")
+#' data("bat_distM")
+#' output3c <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "coverage", level = 0.9, nboot = 10,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95,
+#'                       FDdistM = bat_distM, FDtype = "AUC", FDcut_number = 30)
+#' output3c
+#'
+#' # Sized-based standardized FD
+#' data("bat_incidence_data")
+#' data("bat_distM")
+#' output3s <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "size", level = 0.9, nboot = 10,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95,
+#'                       FDdistM = bat_distM, FDtype = "AUC", FDcut_number = 30)
+#' output3s
+#'
 #' @export
 
 
-iNEXTmeta <- function(data, diversity="TD", order.q=0, datatype="incidence_raw", base="coverage", level=NULL, nboot=10, treatment_order, conf=0.95, PDtree, PDreftime = NULL, PDtype = "meanPD", FDdistM, FDtype = "AUC", FDtau = NULL){
+iNEXTmeta <- function(data, diversity="TD", order.q=0, datatype="incidence_raw", base="coverage", level=NULL, nboot=10, treatment_order, conf=0.95, PDtree, PDreftime = NULL, PDtype = "meanPD", FDdistM, FDtype = "AUC", FDtau = NULL, FDcut_number=30){
 
 
   ##分解名字，取出site,each place和treatment的名稱
@@ -105,12 +164,43 @@ iNEXTmeta <- function(data, diversity="TD", order.q=0, datatype="incidence_raw",
 
   CC <- qnorm((1-conf)/2, lower.tail = F)
 
-  ## each site
-  div_T1 <- estimate3D(data_T1, diversity=diversity, q=order.q, datatype=datatype, base=base, nboot=nboot, level=level, PDtree=PDtree, PDreftime=PDreftime, PDtype=PDtype, FDdistM=FDdistM, FDtype=FDtype, FDtau=FDtau)
-  div_T2 <- estimate3D(data_T2, diversity=diversity, q=order.q, datatype=datatype, base=base, nboot=nboot, level=level, PDtree=PDtree, PDreftime=PDreftime, PDtype=PDtype, FDdistM=FDdistM, FDtype=FDtype, FDtau=FDtau)
+  ## coverage
+  if (datatype == "incidence_raw" & base == "coverage" & is.null(level)){
+    Cmax_inc <- c()
+    for(i in 1:length(data)){
+      Cmax_inc <- c(Cmax_inc, iNEXT.3D:::Coverage(data[[i]], datatype="incidence_raw", 2*ncol(data[[i]])))
+    }
+    Cmax_inc <- min(Cmax_inc)
+    level <- Cmax_inc
+  }
 
-  D1 <- as.data.frame(div_T1)[,5]
-  D2 <- as.data.frame(div_T2)[,5]
+  if (datatype == "abundance" & base == "coverage" & is.null(level)){
+    Cmax_abun <- c()
+    for(i in 1:ncol(data)){
+      Cmax_abun <- c(Cmax_abun, iNEXT.3D:::Coverage(data[,i], datatype="abundance", 2*sum(data[,i])))
+    }
+    Cmax_abun <- min(Cmax_abun)
+    level <- Cmax_abun
+  }
+
+  if (datatype == "incidence_raw" & base == "size" & is.null(level)){
+    Smax_inc <- 2*sapply(1:length(data), function(w) dim(data[[w]])[2])
+    Smax_inc <- min(Smax_inc)
+    level <- Smax_inc
+  }
+
+  if (datatype == "abundance" & base == "size" & is.null(level)){
+    Smax_abun <- 2*apply(data,2,sum)
+    Smax_abun <- min(Smax_abun)
+    level <- Smax_abun
+  }
+
+  ## each site
+  div_T1 <- estimate3D(data_T1, diversity=diversity, q=order.q, datatype=datatype, base=base, nboot=nboot, level=level, PDtree=PDtree, PDreftime=PDreftime, PDtype=PDtype, FDdistM=FDdistM, FDtype=FDtype, FDtau=FDtau, FDcut_number=30)
+  div_T2 <- estimate3D(data_T2, diversity=diversity, q=order.q, datatype=datatype, base=base, nboot=nboot, level=level, PDtree=PDtree, PDreftime=PDreftime, PDtype=PDtype, FDdistM=FDdistM, FDtype=FDtype, FDtau=FDtau, FDcut_number=30)
+
+  D1 <- as.data.frame(div_T1)[,6]
+  D2 <- as.data.frame(div_T2)[,6]
   Diff <- D1 - D2
   Var <- div_T1$s.e.^2 + div_T2$s.e.^2
   UCL <- Diff+CC*sqrt(Var)
@@ -140,51 +230,106 @@ iNEXTmeta <- function(data, diversity="TD", order.q=0, datatype="incidence_raw",
 
 #' forest plot for the difference of standardized 3D diversity with two treatments
 #'
-#' \code{ggiNEXTmeta} is a function that provides forest plot for the difference of standardized 3D diversity with two treatments.
+#' \code{ggiNEXTmeta} is a function that provides forest plot for the difference of standardized 3D (taxonomic, phylogenetic and functional) diversity with two treatments.
 #'
-#' @param data the outcome of the iNEXTmeta function.
-#' @param range the range of the forest plot.
-#' @param num_round a number that the values show on the plot are rounded to the specified number of decimal places.
+#' @param output the output of the iNEXTmeta function.
+#' @param num_round a numerical value that the values show on the plot are rounded to the specified value of decimal places. Default is 3.
 #'
 #'
 #' @import ggplot2
 #' @import GGally
 #' @import ggpubr
 #' @import forestplot
+#' @import grid
 #'
 #'
-#' @return a forest plot that visualizing the output of iNEXTmeta.
+#' @return a forest plot that visualizing the output of iNEXTmeta. In the plot, it shows the difference of diversity with two treatments for each study/site and meta analysis (fixed effect model).
 #'
 #'
 #' @examples
-#' data("bat")
-#' output <- iNEXTmeta(bat$data, diversity="TD", order.q=0,
-#'                     datatype="incidence_raw", base="coverage", level=0.9,
-#'                     treatment_order=c("Enhanced","Control"))
-#' ggiNEXTmeta(output, c(-11,16), 3)
+#' ## Taxonomic diversity for incidence data
+#'
+#' # Coverage-based standardized TD
+#' data("bat_incidence_data")
+#' output1c <- iNEXTmeta(data = bat_incidence_data, diversity = "TD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "coverage", nboot = 100,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95)
+#' ggiNEXTmeta(output1c, num_round = 3)
+#'
+#' # Sized-based standardized TD
+#' data("bat_incidence_data")
+#' output1s <- iNEXTmeta(data = bat_incidence_data, diversity = "TD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "size", nboot = 100,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95)
+#' ggiNEXTmeta(output1s, num_round = 3)
+#'
+#'
+#'
+#' ## Phylogenetic diversity for incidence data
+#'
+#' # Coverage-based standardized PD
+#' data("bat_incidence_data")
+#' data("bat_tree")
+#' output2c <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "coverage", nboot = 10,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95,
+#'                       PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
+#' ggiNEXTmeta(output2c, num_round = 3)
+#'
+#' # Sized-based standardized PD
+#' data("bat_incidence_data")
+#' data("bat_tree")
+#' output2s <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "size", nboot = 10,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95,
+#'                       PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
+#' ggiNEXTmeta(output2s, num_round = 3)
+#'
+#'
+#'
+#' ## Functional diversity for incidence data
+#'
+#' # Coverage-based standardized FD
+#' data("bat_incidence_data")
+#' data("bat_distM")
+#' output3c <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "coverage", nboot = 10,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95,
+#'                       FDdistM = bat_distM, FDtype = "AUC", FDcut_number = 30)
+#' ggiNEXTmeta(output3c, num_round = 3)
+#'
+#' # Sized-based standardized FD
+#' data("bat_incidence_data")
+#' data("bat_distM")
+#' output3s <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0,
+#'                       datatype = "incidence_raw", base = "size", nboot = 10,
+#'                       treatment_order = c("Enhanced","Control"), conf = 0.95,
+#'                       FDdistM = bat_distM, FDtype = "AUC", FDcut_number = 30)
+#' ggiNEXTmeta(output3s, num_round = 3)
 #'
 #' @export
 
 
-ggiNEXTmeta <- function(data,range,num_round){
+ggiNEXTmeta <- function(output, num_round=3){
 
-  name_place <- colnames(data)[1]
-  name_treat <- colnames(data)[c(8,9)]
-  meta_num <- dim(data)[1]
-  name_site <- data[,1][-meta_num]
-  diversity <- data$Diversity[1]
-  order <- data$Order.q[1]
+  name_place <- colnames(output)[1]
+  name_treat <- colnames(output)[c(8,9)]
+  meta_num <- dim(output)[1]
+  name_site <- output[,1][-meta_num]
+  diversity <- output$Diversity[1]
+  order <- output$Order.q[1]
+  range <- c(floor(min(output$LCL)), ceiling(max(output$UCL)))
 
-  forestplot_q <- tibble::tibble(mean  = round(data$Difference[-meta_num],num_round),
-                                 lower = round(data$LCL[-meta_num],num_round),
-                                 upper = round(data$UCL[-meta_num],num_round),
+  forestplot_q <- tibble::tibble(mean  = round(output$Difference[-meta_num],num_round),
+                                 lower = round(output$LCL[-meta_num],num_round),
+                                 upper = round(output$UCL[-meta_num],num_round),
                                  study = name_site,
-                                 q_T1 = round(data[,8][-meta_num],num_round),
-                                 q_T2 = round(data[,9][-meta_num],num_round),
-                                 diff = round(data$Difference[-meta_num],num_round),
-                                 LCL = round(data$LCL[-meta_num],num_round),
-                                 UCL= round(data$UCL[-meta_num],num_round),
-                                 w_fixed= paste(round(data$weight_fixed[-meta_num],2),"%",sep=""))
+                                 q_T1 = round(output[,8][-meta_num],num_round),
+                                 q_T2 = round(output[,9][-meta_num],num_round),
+                                 diff = round(output$Difference[-meta_num],num_round),
+                                 LCL = round(output$LCL[-meta_num],num_round),
+                                 UCL= round(output$UCL[-meta_num],num_round),
+                                 w_fixed= paste(round(output$weight_fixed[-meta_num],2),"%",sep=""))
 
   forestplot_q |>
     forestplot(labeltext = c(study, q_T1, q_T2, diff, LCL, UCL, w_fixed),
@@ -201,13 +346,13 @@ ggiNEXTmeta <- function(data,range,num_round){
                   LCL=c("","LCL"),
                   UCL=c("","UCL"),
                   w_fixed=c("","W(fixed)")) |>
-    fp_append_row(mean  = round(data$Difference[meta_num],num_round),
-                  lower = round(data$LCL[meta_num],num_round),
-                  upper = round(data$UCL[meta_num],num_round),
+    fp_append_row(mean  = round(output$Difference[meta_num],num_round),
+                  lower = round(output$LCL[meta_num],num_round),
+                  upper = round(output$UCL[meta_num],num_round),
                   study = "Meta analysis",
-                  diff = round(data$Difference[meta_num],num_round),
-                  LCL = round(data$LCL[meta_num],num_round),
-                  UCL = round(data$UCL[meta_num],num_round),
+                  diff = round(output$Difference[meta_num],num_round),
+                  LCL = round(output$LCL[meta_num],num_round),
+                  UCL = round(output$UCL[meta_num],num_round),
                   is.summary = TRUE) |>
     fp_decorate_graph(graph.pos = 4) |>
     fp_set_zebra_style("#EFEFEF")

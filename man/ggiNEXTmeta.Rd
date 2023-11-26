@@ -4,26 +4,78 @@
 \alias{ggiNEXTmeta}
 \title{forest plot for the difference of standardized 3D diversity with two treatments}
 \usage{
-ggiNEXTmeta(data, range, num_round)
+ggiNEXTmeta(output, num_round = 3)
 }
 \arguments{
-\item{data}{the outcome of the iNEXTmeta function.}
+\item{output}{the output of the iNEXTmeta function.}
 
-\item{range}{the range of the forest plot.}
-
-\item{num_round}{a number that the values show on the plot are rounded to the specified number of decimal places.}
+\item{num_round}{a numerical value that the values show on the plot are rounded to the specified value of decimal places. Default is 3.}
 }
 \value{
-a forest plot that visualizing the output of iNEXTmeta.
+a forest plot that visualizing the output of iNEXTmeta. In the plot, it shows the difference of diversity with two treatments for each study/site and meta analysis (fixed effect model).
 }
 \description{
-\code{ggiNEXTmeta} is a function that provides forest plot for the difference of standardized 3D diversity with two treatments.
+\code{ggiNEXTmeta} is a function that provides forest plot for the difference of standardized 3D (taxonomic, phylogenetic and functional) diversity with two treatments.
 }
 \examples{
-data("bat")
-output <- iNEXTmeta(bat$data, diversity="TD", order.q=0,
-                    datatype="incidence_raw", base="coverage", level=0.9,
-                    treatment_order=c("Enhanced","Control"))
-ggiNEXTmeta(output, c(-11,16), 3)
+## Taxonomic diversity for incidence data
+
+# Coverage-based standardized TD
+data("bat_incidence_data")
+output1c <- iNEXTmeta(data = bat_incidence_data, diversity = "TD", order.q = 0,
+                      datatype = "incidence_raw", base = "coverage", nboot = 100,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95)
+ggiNEXTmeta(output1c, num_round = 3)
+
+# Sized-based standardized TD
+data("bat_incidence_data")
+output1s <- iNEXTmeta(data = bat_incidence_data, diversity = "TD", order.q = 0,
+                      datatype = "incidence_raw", base = "size", nboot = 100,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95)
+ggiNEXTmeta(output1s, num_round = 3)
+
+
+
+## Phylogenetic diversity for incidence data
+
+# Coverage-based standardized PD
+data("bat_incidence_data")
+data("bat_tree")
+output2c <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q = 0,
+                      datatype = "incidence_raw", base = "coverage", nboot = 10,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95,
+                      PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
+ggiNEXTmeta(output2c, num_round = 3)
+
+# Sized-based standardized PD
+data("bat_incidence_data")
+data("bat_tree")
+output2s <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q = 0,
+                      datatype = "incidence_raw", base = "size", nboot = 10,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95,
+                      PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
+ggiNEXTmeta(output2s, num_round = 3)
+
+
+
+## Functional diversity for incidence data
+
+# Coverage-based standardized FD
+data("bat_incidence_data")
+data("bat_distM")
+output3c <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0,
+                      datatype = "incidence_raw", base = "coverage", nboot = 10,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95,
+                      FDdistM = bat_distM, FDtype = "AUC", FDcut_number = 30)
+ggiNEXTmeta(output3c, num_round = 3)
+
+# Sized-based standardized FD
+data("bat_incidence_data")
+data("bat_distM")
+output3s <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0,
+                      datatype = "incidence_raw", base = "size", nboot = 10,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95,
+                      FDdistM = bat_distM, FDtype = "AUC", FDcut_number = 30)
+ggiNEXTmeta(output3s, num_round = 3)
 
 }

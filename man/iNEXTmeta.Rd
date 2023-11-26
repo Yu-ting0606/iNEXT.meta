@@ -19,26 +19,27 @@ iNEXTmeta(
   PDtype = "meanPD",
   FDdistM,
   FDtype = "AUC",
-  FDtau = NULL
+  FDtau = NULL,
+  FDcut_number = 30
 )
 }
 \arguments{
 \item{data}{(a) For datatype = "abundance", data can be input as a data.frame (species by assemblages). Here an assemblage refers to a combination of study/site and treatment. The names of assemblages must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage. For example, like "Site_B04_Control" the name of a assemblage, "Site" is the word use in this data, "B04" is the site of this assemblage and "Control" is the treatment of this assemblage.\cr
-(b) For datatype = "incidence_raw", data can be input as a list with several lists (assemblages) of data.frames, each matrix represents species-by-sampling units incidence data. The names of lists (assemblages) must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage, as described in datatype "abundance".}
+(b) For datatype = "incidence_raw", data can be input as a list with several data.frames (assemblages), each data.frames represents species-by-sampling units incidence data. The names of lists (assemblages) must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage, as described in datatype "abundance".}
 
 \item{diversity}{selection of diversity type: 'TD' = Taxonomic diversity, 'PD' = Phylogenetic diversity, and 'FD' = Functional diversity.}
 
-\item{order.q}{a number specifying the diversity order, Default is \code{q = 0}.}
+\item{order.q}{a numerical value specifying the diversity order, Default is \code{q = 0}.}
 
-\item{datatype}{data type of input data: individual-based abundance data (datatype = "abundance"), species by sampling-units incidence matrix (datatype = "incidence_raw") with all entries being 0 (non-detection) or 1 (detection).}
+\item{datatype}{data type of input data: individual-based abundance data (datatype = "abundance") or species by sampling-units incidence matrix (datatype = "incidence_raw") with all entries being 0 (non-detection) or 1 (detection).}
 
 \item{base}{selection of standardization base: sample-size-based (base = "size") or coverage-based (base = "coverage") rarefaction and extrapolation for estimating standardized 3D diversity. Default is \code{base = "coverage"}.}
 
-\item{level}{a number specifying the particular value of sample coverage (between 0 and 1) or sample sizes that will be used to compute standardized 3D estimates. \cr
+\item{level}{a numerical value specifying the particular value of sample coverage (between 0 and 1) or sample sizes that will be used to compute standardized 3D estimates. \cr
 If base = "coverage" and level = NULL, then this function computes the standardized 3D diversity estimates for the minimum sample coverage among all samples extrapolated to double reference sizes. \cr
 If base = "size" and level = NULL, then this function computes the standardized 3D diversity estimates for the minimum sample size among all samples extrapolated to double reference sizes.}
 
-\item{nboot}{a positive integer specifying the number of bootstrap replications when assessing sampling uncertainty for estimating standardized 3D diversity and the associated confidence intervals. Default is 10.}
+\item{nboot}{a positive integer specifying the number of bootstrap replications when assessing sampling uncertainty for estimating standardized 3D diversity and the associated confidence intervals. Default is 10. If more accurate results are required, set \code{nboot = 100} (or \code{nboot = 200}).}
 
 \item{treatment_order}{a character vector for the names of treatment. The difference of standardized 3D diversity will be computed as diversity of the first treatment minus the diversity of second treatment.}
 
@@ -46,15 +47,17 @@ If base = "size" and level = NULL, then this function computes the standardized 
 
 \item{PDtree}{(required only when diversity = "PD"), a phylogenetic tree in Newick format for all observed species in the pooled data.}
 
-\item{PDreftime}{(required only when diversity = "PD"), a number specifying reference times for PD. Default is NULL (i.e., the age of the root of PDtree).}
+\item{PDreftime}{(required only when diversity = "PD"), a numerical value specifying reference times for PD. Default is NULL (i.e., the age of the root of PDtree).}
 
 \item{PDtype}{(required only when diversity = "PD"), select PD type: PDtype = "PD" (effective total branch length) or PDtype = "meanPD" (effective number of equally divergent lineages). Default is "meanPD", where meanPD = PD/tree depth.}
 
 \item{FDdistM}{(required only when diversity = "FD"), a species pairwise distance matrix for all species in the pooled data.}
 
-\item{FDtype}{(required only when diversity = "FD"), select FD type: FDtype = "tau_values" for FD under specified threshold values, or FDtype = "AUC" (area under the curve of tau-profile) for an overall FD which integrates all threshold values between zero and one. Default is "AUC".}
+\item{FDtype}{(required only when diversity = "FD"), select FD type: FDtype = "tau_values" for FD under a specified threshold value, or FDtype = "AUC" (area under the curve of tau-profile) for an overall FD which integrates all threshold values between zero and one. Default is "AUC".}
 
-\item{FDtau}{(required only when diversity = "FD" and FDtype = "tau_values"), a number between 0 and 1 specifying tau values (threshold levels). If NULL (default), then threshold is set to be the mean distance between any two individuals randomly selected from the pooled data (i.e., quadratic entropy).}
+\item{FDtau}{(required only when diversity = "FD" and FDtype = "tau_values"), a numerical value between 0 and 1 specifying the tau value (threshold level) that will be used to compute FD. If \code{FDtau = "NULL"} (default), then threshold is set to be the mean distance between any two individuals randomly selected from the pooled data (i.e., quadratic entropy).}
+
+\item{FDcut_number}{(required only when diversity = "FD" and FDtype = "AUC") a numeric number to cut [0, 1] interval into equal-spaced sub-intervals to obtain the AUC value by integrating the tau-profile. Equivalently, the number of tau values that will be considered to compute the integrated AUC value. Default is 30. A larger value can be set to obtain more accurate AUC value.}
 }
 \value{
 a dataframe with columns ’Study/Site (or the word that setting in the names of columns/lists in data)’,
@@ -63,11 +66,68 @@ difference), ’LCL’ and ’UCL’. Also, dataframe have two columns with the 
 diversity of two treatments in each study/site. And a column ’weight_fixed’ at the last of dataframe.
 }
 \description{
-\code{iNEXTmeta} is a function that estimates the difference of standardized 3D (taxonomic, phylogenetic and functional) diversity with two treatments (e.g., enhanced vs. control), and perform meta analysis for several studies/sites.
+\code{iNEXTmeta} is a function that estimates the difference of standardized 3D (taxonomic, phylogenetic and functional) diversity with two treatments (e.g., enhanced vs. control), and perform meta analysis (fixed effect model) for several studies/sites.
 }
 \examples{
-data("bat")
-iNEXTmeta(bat$data, diversity="TD", order.q=0,
-          datatype="incidence_raw", base="coverage", level=0.9,
-          treatment_order=c("Enhanced","Control"))
+
+## Taxonomic diversity for incidence data
+
+# Coverage-based standardized TD
+data("bat_incidence_data")
+output1c <- iNEXTmeta(data = bat_incidence_data, diversity = "TD", order.q = 0,
+                      datatype = "incidence_raw", base = "coverage", level = 0.9, nboot = 100,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95)
+output1c
+
+# Sized-based standardized TD
+data("bat_incidence_data")
+output1s <- iNEXTmeta(data = bat_incidence_data, diversity = "TD", order.q = 0,
+                      datatype = "incidence_raw", base = "size", level = 0.9, nboot = 100,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95)
+output1s
+
+
+
+## Phylogenetic diversity for incidence data
+
+# Coverage-based standardized PD
+data("bat_incidence_data")
+data("bat_tree")
+output2c <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q = 0,
+                      datatype = "incidence_raw", base = "coverage", level = 0.9, nboot = 10,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95,
+                      PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
+output2c
+
+# Sized-based standardized PD
+data("bat_incidence_data")
+data("bat_tree")
+output2s <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q = 0,
+                      datatype = "incidence_raw", base = "size", level = 0.9, nboot = 10,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95,
+                      PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
+output2s
+
+
+
+## Functional diversity for incidence data
+
+# Coverage-based standardized FD
+data("bat_incidence_data")
+data("bat_distM")
+output3c <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0,
+                      datatype = "incidence_raw", base = "coverage", level = 0.9, nboot = 10,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95,
+                      FDdistM = bat_distM, FDtype = "AUC", FDcut_number = 30)
+output3c
+
+# Sized-based standardized FD
+data("bat_incidence_data")
+data("bat_distM")
+output3s <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0,
+                      datatype = "incidence_raw", base = "size", level = 0.9, nboot = 10,
+                      treatment_order = c("Enhanced","Control"), conf = 0.95,
+                      FDdistM = bat_distM, FDtype = "AUC", FDcut_number = 30)
+output3s
+
 }
