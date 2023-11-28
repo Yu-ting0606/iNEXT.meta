@@ -334,11 +334,12 @@ ggiNEXTmeta <- function(output, num_round=3){
   forestplot_q |>
     forestplot(labeltext = c(study, q_T1, q_T2, diff, LCL, UCL, w_fixed),
                clip = range,
-               xlog = F) |>
+               xlog = F, txt_gp = fpTxtGp(cex=0.8, ticks=gpar(cex=0.6)),
+               mar= unit(rep(0,4),"mm"), graphwidth = unit(4, "cm"),
+               colgap= unit(4,"mm")) |>
     fp_set_style(box = "royalblue",
                  line = "darkblue",
-                 summary = "royalblue",
-                 txt_gp = fpTxtGp(ticks = gpar(cex=1))) |>
+                 summary = "royalblue") |>
     fp_add_header(study = c("", name_place),
                   q_T1 = c(paste(diversity,"(q=",order,")",sep=""), name_treat[1]),
                   q_T2 = c(paste(diversity,"(q=",order,")",sep=""), name_treat[2]),
