@@ -321,7 +321,7 @@ output1c  <-  iNEXTmeta(data = bat_incidence_data, diversity = 'TD', order.q=0, 
                         base = 'coverage', nboot = 100, treatment_order=c("Enhanced","Control"), conf=0.95)
 ggiNEXTmeta(output1c, num_round = 3)
 ```
-
+![](output1c.png)
 
 
 ```{r, eval=FALSE}
@@ -334,7 +334,7 @@ output2c <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q=0, da
                       PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
 ggiNEXTmeta(output2c, num_round = 3)
 ```
-
+![](output2c.png)
 
 
 ```{r, eval=FALSE}
@@ -347,6 +347,6 @@ output3c <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0, 
                       FDdistM = bat_distM, FDtype = 'AUC', FDcut_number = 30)
 ggiNEXTmeta(output3c, num_round = 3)
 ```
-
+![](output3c.png)
 
 
