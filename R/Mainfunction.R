@@ -335,7 +335,7 @@ ggiNEXTmeta <- function(output, num_round=3){
     forestplot(labeltext = c(study, q_T1, q_T2, diff, LCL, UCL, w_fixed),
                clip = range,
                xlog = F, txt_gp = fpTxtGp(cex=1, ticks=gpar(cex=0.8)),
-               mar= unit(rep(0,4),"mm"), graphwidth = unit(7, "cm"),
+               graphwidth = unit(7, "cm"),
                colgap= unit(3,"mm")) |>
     fp_set_style(box = "royalblue",
                  line = "darkblue",
