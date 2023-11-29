@@ -14,7 +14,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>",
                       fig.align = 'center',
                       fig.width = 7, fig.height = 3,
                       warning = FALSE, message = FALSE)
-options("width"=200)
+#options("width"=200)
 library(iNEXT.meta)
 ```
 
@@ -313,17 +313,19 @@ ggiNEXTmeta(output, num_round=3)
 
 The `ggiNEXTmeta()` function is a wrapper around the `forestplot` package. `ggiNEXTmeta()` provides forest plot for visualizing the output of `iNEXTmeta()`. Run the following code to display the plot for the output of `iNEXTmeta()` with taxonomic, phylogenetic and functional diversity, respectively:
 
-```{r}
-# Taxonomic diversity
+```{r, eval=FALSE, fig.align = 'center',fig.width = 12, fig.height = 5}
+## Taxonomic diversity
 
 data("bat_incidence_data")
 output1c  <-  iNEXTmeta(data = bat_incidence_data, diversity = 'TD', order.q=0, datatype="incidence_raw", 
                         base = 'coverage', nboot = 100, treatment_order=c("Enhanced","Control"), conf=0.95)
 ggiNEXTmeta(output1c, num_round = 3)
 ```
+![](output1c.png){#id .class width=100%}
 
 
-```{r}
+
+```{r, eval=FALSE, fig.align = 'center',fig.width = 12, fig.height = 5}
 ## Phylogenetic diversity
 
 data("bat_incidence_data")
@@ -333,8 +335,11 @@ output2c <- iNEXTmeta(data = bat_incidence_data, diversity = "PD", order.q=0, da
                       PDtree = bat_tree, PDreftime = NULL, PDtype = "meanPD")
 ggiNEXTmeta(output2c, num_round = 3)
 ```
+![](output2c.png){#id .class width=100%}
 
-```{r}
+
+
+```{r, eval=FALSE, fig.align = 'center',fig.width = 12, fig.height = 5}
 ## Functional diversity
 
 data("bat_incidence_data")
@@ -344,6 +349,6 @@ output3c <- iNEXTmeta(data = bat_incidence_data, diversity = "FD", order.q = 0, 
                       FDdistM = bat_distM, FDtype = 'AUC', FDcut_number = 30)
 ggiNEXTmeta(output3c, num_round = 3)
 ```
-
+![](output3c.png){#id .class width=100%}
 
 
