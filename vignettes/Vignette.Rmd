@@ -313,7 +313,7 @@ ggiNEXTmeta(output, num_round=3)
 
 The `ggiNEXTmeta()` function is a wrapper around the `forestplot` package. `ggiNEXTmeta()` provides forest plot for visualizing the output of `iNEXTmeta()`. Run the following code to display the plot for the output of `iNEXTmeta()` with taxonomic, phylogenetic and functional diversity, respectively:
 
-```{r, eval=FALSE, fig.align = 'center',fig.width = 12, fig.height = 5}
+```{r, eval=FALSE}
 ## Taxonomic diversity
 
 data("bat_incidence_data")
@@ -324,8 +324,7 @@ ggiNEXTmeta(output1c, num_round = 3)
 
 
 
-
-```{r, eval=FALSE, fig.align = 'center',fig.width = 12, fig.height = 5}
+```{r, eval=FALSE}
 ## Phylogenetic diversity
 
 data("bat_incidence_data")
@@ -338,8 +337,7 @@ ggiNEXTmeta(output2c, num_round = 3)
 
 
 
-
-```{r, eval=FALSE, fig.align = 'center',fig.width = 12, fig.height = 5}
+```{r, eval=FALSE}
 ## Functional diversity
 
 data("bat_incidence_data")
