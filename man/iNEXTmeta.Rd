@@ -24,20 +24,20 @@ iNEXTmeta(
 )
 }
 \arguments{
-\item{data}{(a) For datatype = "abundance", data can be input as a data.frame (species by assemblages). Here an assemblage refers to a combination of study/site and treatment. The names of assemblages must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage. For example, like "Site_B04_Control" the name of a assemblage, "Site" is the word use in this data, "B04" is the site of this assemblage and "Control" is the treatment of this assemblage.\cr
-(b) For datatype = "incidence_raw", data can be input as a list with several data.frames (assemblages), each data.frames represents species-by-sampling units incidence data. The names of lists (assemblages) must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage, as described in datatype "abundance".}
+\item{data}{(a) For \code{datatype = "abundance"}, data can be input as a data.frame (species by assemblages). Here an assemblage refers to a combination of study/site and treatment. The names of assemblages must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage. For example, like "Site_B04_Control" the name of a assemblage, "Site" is the word use in this data, "B04" is the site of this assemblage and "Control" is the treatment of this assemblage.\cr
+(b) For \code{datatype = "incidence_raw"}, data can be input as a list with several data.frames (assemblages), each data.frames represents species-by-sampling units incidence data. The names of lists (assemblages) must use "_" connect "sites"/"studies" (or other kind of word in your research), site/study and treatment of each assemblage, as described in datatype "abundance".}
 
 \item{diversity}{selection of diversity type: 'TD' = Taxonomic diversity, 'PD' = Phylogenetic diversity, and 'FD' = Functional diversity.}
 
 \item{order.q}{a numerical value specifying the diversity order, Default is \code{q = 0}.}
 
-\item{datatype}{data type of input data: individual-based abundance data (datatype = "abundance") or species by sampling-units incidence matrix (datatype = "incidence_raw") with all entries being 0 (non-detection) or 1 (detection).}
+\item{datatype}{data type of input data: individual-based abundance data (\code{datatype = "abundance"}) or species by sampling-units incidence matrix (\code{datatype = "incidence_raw"}) with all entries being 0 (non-detection) or 1 (detection).}
 
-\item{base}{selection of standardization base: sample-size-based (base = "size") or coverage-based (base = "coverage") rarefaction and extrapolation for estimating standardized 3D diversity. Default is \code{base = "coverage"}.}
+\item{base}{selection of standardization base: sample-size-based (\code{base = "size"}) or coverage-based (\code{base = "coverage"}) rarefaction and extrapolation for estimating standardized 3D diversity. Default is \code{base = "coverage"}.}
 
 \item{level}{a numerical value specifying the particular value of sample coverage (between 0 and 1) or sample sizes that will be used to compute standardized 3D estimates. \cr
-If base = "coverage" and level = NULL, then this function computes the standardized 3D diversity estimates for the minimum sample coverage among all samples extrapolated to double reference sizes. \cr
-If base = "size" and level = NULL, then this function computes the standardized 3D diversity estimates for the minimum sample size among all samples extrapolated to double reference sizes.}
+If \code{base = "coverage"} and \code{level = NULL}, then this function computes the standardized 3D diversity estimates for the minimum sample coverage among all samples extrapolated to double reference sizes. \cr
+If \code{base = "size"} and \code{level = NULL}, then this function computes the standardized 3D diversity estimates for the minimum sample size among all samples extrapolated to double reference sizes.}
 
 \item{nboot}{a positive integer specifying the number of bootstrap replications when assessing sampling uncertainty for estimating standardized 3D diversity and the associated confidence intervals. Default is 10. If more accurate results are required, set \code{nboot = 100} (or \code{nboot = 200}).}
 
@@ -45,25 +45,25 @@ If base = "size" and level = NULL, then this function computes the standardized 
 
 \item{conf}{a positive number < 1 specifying the level of confidence interval. Default is 0.95.}
 
-\item{PDtree}{(required only when diversity = "PD"), a phylogenetic tree in Newick format for all observed species in the pooled data.}
+\item{PDtree}{(required only when \code{diversity = "PD"}), a phylogenetic tree in Newick format for all observed species in the pooled data.}
 
-\item{PDreftime}{(required only when diversity = "PD"), a numerical value specifying reference times for PD. Default is NULL (i.e., the age of the root of PDtree).}
+\item{PDreftime}{(required only when \code{diversity = "PD"}), a numerical value specifying reference times for PD. Default is NULL (i.e., the age of the root of PDtree).}
 
-\item{PDtype}{(required only when diversity = "PD"), select PD type: PDtype = "PD" (effective total branch length) or PDtype = "meanPD" (effective number of equally divergent lineages). Default is "meanPD", where meanPD = PD/tree depth.}
+\item{PDtype}{(required only when \code{diversity = "PD"}), select PD type: \code{PDtype = "PD"} (effective total branch length) or \code{PDtype = "meanPD"} (effective number of equally divergent lineages). Default is \code{PDtype = "meanPD"}, where meanPD = PD/tree depth.}
 
-\item{FDdistM}{(required only when diversity = "FD"), a species pairwise distance matrix for all species in the pooled data.}
+\item{FDdistM}{(required only when \code{diversity = "FD"}), a species pairwise distance matrix for all species in the pooled data.}
 
-\item{FDtype}{(required only when diversity = "FD"), select FD type: FDtype = "tau_values" for FD under a specified threshold value, or FDtype = "AUC" (area under the curve of tau-profile) for an overall FD which integrates all threshold values between zero and one. Default is "AUC".}
+\item{FDtype}{(required only when \code{diversity = "FD"}), select FD type: \code{FDtype = "tau_values"} for FD under a specified threshold value, or \code{FDtype = "AUC"} (area under the curve of tau-profile) for an overall FD which integrates all threshold values between zero and one. Default is \code{FDtype = "AUC"}.}
 
-\item{FDtau}{(required only when diversity = "FD" and FDtype = "tau_values"), a numerical value between 0 and 1 specifying the tau value (threshold level) that will be used to compute FD. If \code{FDtau = "NULL"} (default), then threshold is set to be the mean distance between any two individuals randomly selected from the pooled data (i.e., quadratic entropy).}
+\item{FDtau}{(required only when \code{diversity = "FD"} and \code{FDtype = "tau_values"}), a numerical value between 0 and 1 specifying the tau value (threshold level) that will be used to compute FD. If \code{FDtau = "NULL"} (default), then threshold is set to be the mean distance between any two individuals randomly selected from the pooled data (i.e., quadratic entropy).}
 
-\item{FDcut_number}{(required only when diversity = "FD" and FDtype = "AUC") a numeric number to cut [0, 1] interval into equal-spaced sub-intervals to obtain the AUC value by integrating the tau-profile. Equivalently, the number of tau values that will be considered to compute the integrated AUC value. Default is 30. A larger value can be set to obtain more accurate AUC value.}
+\item{FDcut_number}{(required only when \code{diversity = "FD"} and \code{FDtype = "AUC"}) a numeric number to cut [0, 1] interval into equal-spaced sub-intervals to obtain the AUC value by integrating the tau-profile. Equivalently, the number of tau values that will be considered to compute the integrated AUC value. Default is 30. A larger value can be set to obtain more accurate AUC value.}
 }
 \value{
 a dataframe with columns ’Study/Site (or the word that setting in the names of columns/lists in data)’,
-’Order.q’, ’Diversity’, ’Difference’ (difference of diversity for two treatments), ’SE’ (standard deviation of
+’Order.q’, ’Diversity’(use TD, PD or FD), ’Difference’ (difference of diversity for two treatments), ’SE’ (standard deviation of
 difference), ’LCL’ and ’UCL’. Also, dataframe have two columns with the names of treatments, which are about
-diversity of two treatments in each study/site. And a column ’weight_fixed’ at the last of dataframe.
+diversity of two treatments in each study/site. And a column ’weight_fixed’ (weight of each site/study for fixed effect model) at the last of dataframe.
 }
 \description{
 \code{iNEXTmeta} is a function that estimates the difference of standardized 3D (taxonomic, phylogenetic and functional) diversity with two treatments (e.g., enhanced vs. control), and perform meta analysis (fixed effect model) for several studies/sites.
